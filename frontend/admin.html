@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Kelvin Mkini</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+
+  <header class="admin-header">
+    <h1>Admin Dashboard</h1>
+    <p>Manage Portfolio Content and Contact Messages</p>
+  </header>
+
+  <main class="admin-container">
+
+    <div class="admin-links">
+      <a href="index.html">View Portfolio</a>
+      <button id="logoutBtn" class="small-btn">Logout</button>
+    </div>
+
+    <section id="loginSection" class="admin-panel">
+      <h2>Admin Login</h2>
+
+      <form id="loginForm">
+        <label>Username</label>
+        <input type="text" name="username" required>
+
+        <label>Password</label>
+        <input type="password" name="password" required>
+
+        <button type="submit">Login</button>
+        <p id="loginStatus"></p>
+      </form>
+    </section>
+
+    <section id="dashboardSection" class="admin-panel hidden">
+      <h2 id="formTitle">Add Portfolio Content</h2>
+
+      <form id="contentForm" enctype="multipart/form-data">
+        <input type="hidden" name="id">
+        <input type="hidden" name="oldImage">
+
+        <label>Section</label>
+        <select name="section" required>
+          <option value="header">Hero Background Image</option>
+          <option value="profile">Personal Profile</option>
+          <option value="skill">Skill</option>
+          <option value="qualification">Qualification</option>
+          <option value="project">Project</option>
+        </select>
+
+        <label>Title</label>
+        <input type="text" name="title" required>
+
+        <label>Description</label>
+        <textarea name="description" rows="5" required></textarea>
+
+        <label>Upload Image</label>
+        <input type="file" name="image" accept="image/*">
+
+        <button type="submit" id="saveContentBtn">Add Content</button>
+        <button type="button" id="cancelEditBtn" class="muted-btn hidden">Cancel Edit</button>
+      </form>
+
+      <h2>Manage Portfolio Content</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Section</th>
+              <th>Image</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="contentTable"></tbody>
+        </table>
+      </div>
+
+      <h2>Client Messages</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Message</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="messagesTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
