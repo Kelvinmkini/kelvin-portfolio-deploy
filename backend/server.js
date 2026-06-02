@@ -30,21 +30,16 @@ const pool = new Pool({
 });
 
 const uploadDir = path.join(__dirname, "uploads");
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseStorageBucket = process.env.SUPABASE_STORAGE_BUCKET || "portfolio-images";
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
-const storage = multer.diskStorage({
-  destination: uploadDir,
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-  }
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024
   },
@@ -58,9 +53,40 @@ const upload = multer({
   }
 });
 
-function uploadedImageUrl(req, filename) {
+function localUploadedImageUrl(req, filename) {
   const protocol = process.env.NODE_ENV === "production" ? "https" : req.protocol;
   return `${protocol}://${req.get("host")}/uploads/${filename}`;
+}
+
+async function uploadImage(req, file) {
+  const ext = path.extname(file.originalname) || ".jpg";
+  const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    const localPath = path.join(uploadDir, filename);
+    fs.writeFileSync(localPath, file.buffer);
+    return localUploadedImageUrl(req, filename);
+  }
+
+  const objectPath = `portfolio/${filename}`;
+  const uploadUrl = `${supabaseUrl}/storage/v1/object/${supabaseStorageBucket}/${objectPath}`;
+  const response = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${supabaseServiceRoleKey}`,
+      apikey: supabaseServiceRoleKey,
+      "Content-Type": file.mimetype,
+      "x-upsert": "true"
+    },
+    body: file.buffer
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(`Supabase image upload failed: ${message}`);
+  }
+
+  return `${supabaseUrl}/storage/v1/object/public/${supabaseStorageBucket}/${objectPath}`;
 }
 
 function authRequired(req, res, next) {
@@ -157,7 +183,7 @@ app.post("/api/content", authRequired, upload.single("image"), async (req, res) 
   const { section, title, description } = req.body;
 
   const image = req.file
-    ? uploadedImageUrl(req, req.file.filename)
+    ? await uploadImage(req, req.file)
     : "";
 
   const result = await pool.query(
@@ -173,7 +199,7 @@ app.put("/api/content/:id", authRequired, upload.single("image"), async (req, re
   const { section, title, description, oldImage } = req.body;
 
   const image = req.file
-    ? uploadedImageUrl(req, req.file.filename)
+    ? await uploadImage(req, req.file)
     : oldImage || "";
 
   const result = await pool.query(
