@@ -31,10 +31,18 @@ function imageSrc(image) {
   return image;
 }
 
+function imageWithFallback(image, fallbackImage, alt) {
+  const fallbackAttr = fallbackImage
+    ? ` onerror="this.onerror=null;this.src='${escapeHtml(fallbackImage)}';"`
+    : "";
+
+  return `<img src="${escapeHtml(imageSrc(image || fallbackImage))}" alt="${escapeHtml(alt)}"${fallbackAttr}>`;
+}
+
 function cardTemplate(item) {
   const image = item.image || fallbackSectionImages[item.section];
   const imageHtml = image
-    ? `<img src="${escapeHtml(imageSrc(image))}" alt="${escapeHtml(item.title)}">`
+    ? imageWithFallback(item.image, fallbackSectionImages[item.section], item.title)
     : "";
 
   return `
@@ -49,7 +57,7 @@ function cardTemplate(item) {
 function projectTemplate(item) {
   const image = item.image || fallbackSectionImages[item.section];
   const imageHtml = image
-    ? `<img src="${escapeHtml(imageSrc(image))}" alt="${escapeHtml(item.title)}">`
+    ? imageWithFallback(item.image, fallbackSectionImages[item.section], item.title)
     : "";
 
   return `
@@ -72,15 +80,16 @@ async function loadPortfolio() {
     const qualifications = content.filter((item) => item.section === "qualification");
     const projects = content.filter((item) => item.section === "project");
 
-    const heroImage = headers[0]?.image || fallbackHeroImage;
-
-    document.getElementById("hero").style.backgroundImage =
-      `linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url("${imageSrc(heroImage)}")`;
+    setHeroImage(headers[0]?.image || fallbackHeroImage);
 
     const profileWithImage = profiles.find((item) => item.image);
+    const profileImage = document.getElementById("profileImage");
 
-    document.getElementById("profileImage").src =
-      imageSrc(profileWithImage?.image || fallbackProfileImage);
+    profileImage.onerror = () => {
+      profileImage.onerror = null;
+      profileImage.src = fallbackProfileImage;
+    };
+    profileImage.src = imageSrc(profileWithImage?.image || fallbackProfileImage);
 
     document.getElementById("profileContent").innerHTML = profiles.map((item) => `
       <h3>${escapeHtml(item.title)}</h3>
@@ -101,6 +110,24 @@ async function loadPortfolio() {
 
     setupMagicScroll();
   }
+}
+
+function setHeroImage(image) {
+  const hero = document.getElementById("hero");
+  const source = imageSrc(image || fallbackHeroImage);
+  const testImage = new Image();
+
+  testImage.onload = () => {
+    hero.style.backgroundImage =
+      `linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url("${source}")`;
+  };
+
+  testImage.onerror = () => {
+    hero.style.backgroundImage =
+      `linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url("${fallbackHeroImage}")`;
+  };
+
+  testImage.src = source;
 }
 
 document.getElementById("contactForm").addEventListener("submit", async (event) => {
