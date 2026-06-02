@@ -20,6 +20,10 @@ function imageSrc(image) {
     return "";
   }
 
+  if (image.startsWith("http://kelvin-portfolio-backend-lm1z.onrender.com")) {
+    return image.replace("http://", "https://");
+  }
+
   if (image.startsWith("http://") || image.startsWith("https://")) {
     return image;
   }

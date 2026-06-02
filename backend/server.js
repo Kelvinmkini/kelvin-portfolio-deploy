@@ -11,6 +11,8 @@ const { Pool } = require("pg");
 const app = express();
 const port = process.env.PORT || 10000;
 
+app.set("trust proxy", true);
+
 const allowedOrigin = process.env.FRONTEND_URL || "*";
 
 app.use(cors({
@@ -55,6 +57,11 @@ const upload = multer({
     cb(null, true);
   }
 });
+
+function uploadedImageUrl(req, filename) {
+  const protocol = process.env.NODE_ENV === "production" ? "https" : req.protocol;
+  return `${protocol}://${req.get("host")}/uploads/${filename}`;
+}
 
 function authRequired(req, res, next) {
   const header = req.headers.authorization || "";
@@ -150,7 +157,7 @@ app.post("/api/content", authRequired, upload.single("image"), async (req, res) 
   const { section, title, description } = req.body;
 
   const image = req.file
-    ? `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
+    ? uploadedImageUrl(req, req.file.filename)
     : "";
 
   const result = await pool.query(
@@ -166,7 +173,7 @@ app.put("/api/content/:id", authRequired, upload.single("image"), async (req, re
   const { section, title, description, oldImage } = req.body;
 
   const image = req.file
-    ? `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
+    ? uploadedImageUrl(req, req.file.filename)
     : oldImage || "";
 
   const result = await pool.query(

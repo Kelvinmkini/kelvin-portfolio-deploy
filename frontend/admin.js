@@ -19,6 +19,18 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function imageSrc(image) {
+  if (!image) {
+    return "";
+  }
+
+  if (image.startsWith("http://kelvin-portfolio-backend-lm1z.onrender.com")) {
+    return image.replace("http://", "https://");
+  }
+
+  return image;
+}
+
 function getToken() {
   return localStorage.getItem(tokenKey);
 }
@@ -92,7 +104,7 @@ async function loadContent() {
     <tr>
       <td>${item.id}</td>
       <td>${escapeHtml(item.section)}</td>
-      <td>${item.image ? `<img class="table-image" src="${escapeHtml(item.image)}" alt="">` : "No image"}</td>
+      <td>${item.image ? `<img class="table-image" src="${escapeHtml(imageSrc(item.image))}" alt="">` : "No image"}</td>
       <td>${escapeHtml(item.title)}</td>
       <td>${escapeHtml(item.description)}</td>
       <td>
