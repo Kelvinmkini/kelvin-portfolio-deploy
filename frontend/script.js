@@ -1,5 +1,10 @@
 const fallbackHeroImage = "uploads/1780351668_header_background.png";
 const fallbackProfileImage = "uploads/1780354205_profile.JPG";
+const fallbackSectionImages = {
+  skill: "uploads/1780352207_skills.png",
+  qualification: "uploads/1780352596_qualification.png",
+  project: "uploads/1780353166_project.png"
+};
 
 function escapeHtml(value) {
   return String(value || "")
@@ -23,13 +28,14 @@ function imageSrc(image) {
 }
 
 function cardTemplate(item) {
-  const image = item.image
-    ? `<img src="${escapeHtml(imageSrc(item.image))}" alt="${escapeHtml(item.title)}">`
+  const image = item.image || fallbackSectionImages[item.section];
+  const imageHtml = image
+    ? `<img src="${escapeHtml(imageSrc(image))}" alt="${escapeHtml(item.title)}">`
     : "";
 
   return `
     <div class="content-card">
-      ${image}
+      ${imageHtml}
       <h3>${escapeHtml(item.title)}</h3>
       <p>${escapeHtml(item.description)}</p>
     </div>
@@ -37,13 +43,14 @@ function cardTemplate(item) {
 }
 
 function projectTemplate(item) {
-  const image = item.image
-    ? `<img src="${escapeHtml(imageSrc(item.image))}" alt="${escapeHtml(item.title)}">`
+  const image = item.image || fallbackSectionImages[item.section];
+  const imageHtml = image
+    ? `<img src="${escapeHtml(imageSrc(image))}" alt="${escapeHtml(item.title)}">`
     : "";
 
   return `
     <div class="project-card">
-      ${image}
+      ${imageHtml}
       <h3>${escapeHtml(item.title)}</h3>
       <p>${escapeHtml(item.description)}</p>
     </div>
